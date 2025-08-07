@@ -10,45 +10,47 @@ document.addEventListener('DOMContentLoaded', () => {
   const deleteDotButton = document.getElementById('delete-dot');
   const saveDotsButton = document.getElementById('save-dots');
 
-  const GIST_ID = '8a5b3ec079e117f4ce6ce158ecf0b976';
-  const GITHUB_TOKEN = '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';
+  const JSONBIN_API_KEY = '$2a$10$08R5UTydrJMQzNU.yBiXT.mRMWUl5eOGASs73udnj3K3ThEdaGJQm';
+  const JSONBIN_BIN_ID = '6894ce06ae596e708fc446e1';
   let dots = [];
   let isEditMode = false;
   let selectedDotId = null;
   let isDragging = false;
   let dragDot = null;
 
-  // Load dots from Gist
+  // Load dots from JSONBin.io
   async function loadDots() {
     try {
-      const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
-      const gist = await response.json();
-      dots = JSON.parse(gist.files['dots.json'].content);
+      const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+        headers: {
+          'X-Master-Key': JSONBIN_API_KEY,
+        },
+      });
+      const data = await response.json();
+      if (Array.isArray(data.record) && data.record.length > 0 && typeof data.record[0] !== 'string') {
+        dots = data.record;
+      } else {
+        dots = [];
+      }
     } catch (e) {
-      console.error("Could not load dots from Gist:", e);
+      console.error("Could not load dots from JSONBin.io:", e);
     }
     renderDots();
   }
 
-  // Save dots to Gist
+  // Save dots to JSONBin.io
   async function saveDots() {
     try {
-      await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-        method: 'PATCH',
+      await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+        method: 'PUT',
         headers: {
-          'Authorization': `token ${GITHUB_TOKEN}`,
-          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+          'X-Master-Key': JSONBIN_API_KEY,
         },
-        body: JSON.stringify({
-          files: {
-            'dots.json': {
-              content: JSON.stringify(dots),
-            },
-          },
-        }),
+        body: JSON.stringify(dots),
       });
     } catch (e) {
-      console.error("Could not save dots to Gist:", e);
+      console.error("Could not save dots to JSONBin.io:", e);
     }
   }
 
