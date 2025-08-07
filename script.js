@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const closeModalButton = document.getElementById('close-modal');
   const editForm = document.getElementById('edit-form');
   const deleteDotButton = document.getElementById('delete-dot');
+  const saveDotsButton = document.getElementById('save-dots');
 
   const GIST_ID = '8a5b3ec079e117f4ce6ce158ecf0b976';
   const GITHUB_TOKEN = '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';
@@ -92,7 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     dots.push(newDot);
-    saveDots();
     renderDots();
     setSelectedDot(newDot.id);
   });
@@ -147,7 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isDragging) {
       isDragging = false;
       dragDot = null;
-      saveDots();
     }
   });
 
@@ -190,7 +189,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isDragging) {
       isDragging = false;
       dragDot = null;
-      saveDots();
     }
   });
 
@@ -214,7 +212,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const dot = dots.find(d => d.id === selectedDotId);
     if (dot) {
       dot.content[e.target.name] = e.target.value;
-      saveDots();
     }
   });
 
@@ -222,7 +219,6 @@ document.addEventListener('DOMContentLoaded', () => {
   deleteDotButton.addEventListener('click', () => {
     if (!selectedDotId) return;
     dots = dots.filter(d => d.id !== selectedDotId);
-    saveDots();
     renderDots();
     setSelectedDot(null);
   });
@@ -263,6 +259,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isEditMode) {
       setSelectedDot(null);
     }
+  });
+
+  // Save dots button
+  saveDotsButton.addEventListener('click', () => {
+    saveDots();
   });
 
   // Initial load
