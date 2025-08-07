@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveDotsButton = document.getElementById('save-dots');
 
   const GIST_ID = '8a5b3ec079e117f4ce6ce158ecf0b976';
-  const GITHUB_TOKEN = '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';
+  const GITHUB_TOKEN = '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';
   let dots = [];
   let isEditMode = false;
   let selectedDotId = null;
