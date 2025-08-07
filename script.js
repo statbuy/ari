@@ -9,32 +9,45 @@ document.addEventListener('DOMContentLoaded', () => {
   const editForm = document.getElementById('edit-form');
   const deleteDotButton = document.getElementById('delete-dot');
 
-  const STORAGE_KEY = 'interactiveMapDots';
+  const GIST_ID = '8a5b3ec079e117f4ce6ce158ecf0b976';
+  const GITHUB_TOKEN = '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';
   let dots = [];
   let isEditMode = false;
   let selectedDotId = null;
   let isDragging = false;
   let dragDot = null;
 
-  // Load dots from local storage
-  function loadDots() {
+  // Load dots from Gist
+  async function loadDots() {
     try {
-      const storedDots = localStorage.getItem(STORAGE_KEY);
-      if (storedDots) {
-        dots = JSON.parse(storedDots);
-      }
+      const response = await fetch(`https://api.github.com/gists/${GIST_ID}`);
+      const gist = await response.json();
+      dots = JSON.parse(gist.files['dots.json'].content);
     } catch (e) {
-      console.error("Could not load dots from local storage:", e);
+      console.error("Could not load dots from Gist:", e);
     }
     renderDots();
   }
 
-  // Save dots to local storage
-  function saveDots() {
+  // Save dots to Gist
+  async function saveDots() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(dots));
+      await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `token ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json',
+        },
+        body: JSON.stringify({
+          files: {
+            'dots.json': {
+              content: JSON.stringify(dots),
+            },
+          },
+        }),
+      });
     } catch (e) {
-      console.error("Could not save dots to local storage:", e);
+      console.error("Could not save dots to Gist:", e);
     }
   }
 
