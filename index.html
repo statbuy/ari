@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Map</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .toggle-checkbox {
+      appearance: none;
+      width: 3.5rem;
+      height: 2rem;
+      background: #4b5563; /* Tailwind gray-600 */
+      border-radius: 9999px;
+      position: relative;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.3s ease-in-out;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .toggle-checkbox::after {
+      content: '';
+      position: absolute;
+      left: 0.25rem;
+      top: 0.25rem;
+      width: 1.5rem;
+      height: 1.5rem;
+      background: white;
+      border-radius: 9999px;
+      transition: all 0.3s ease-in-out;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .toggle-checkbox:checked {
+      background: #ef4444; /* Tailwind red-500 */
+    }
+    .toggle-checkbox:checked::after {
+      transform: translateX(1.5rem);
+    }
+    @keyframes scale-in-center {
+      0% {
+        transform: scale(0);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    .scale-up-center {
+      animation: scale-in-center 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 font-sans text-gray-100">
+  <div class="flex flex-col md:flex-row min-h-screen p-4">
+    <!-- Main Map Container -->
+    <div class="md:flex-1 bg-gray-800 rounded-xl shadow-2xl overflow-hidden md:mr-8 mb-4 md:mb-0 relative">
+      <h1 class="text-3xl font-bold text-center p-4 bg-gray-900 text-white border-b-4 border-red-500">
+        המקומות האוהבים עלינו
+      </h1>
+      <div id="map-container" class="relative w-full h-auto cursor-pointer">
+        <img id="map-image" src="https://i.postimg.cc/JhYCXr7M/image.jpg" alt="Map of Israel" class="w-full h-auto select-none rounded-b-xl">
+      </div>
+    </div>
+
+    <!-- Editing Panel -->
+    <div id="edit-panel" class="hidden md:block md:w-80 w-full bg-gray-800 text-white rounded-xl shadow-lg p-4 flex flex-col justify-start space-y-4">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold flex items-center space-x-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          <span>Panel</span>
+        </h2>
+      </div>
+      <div class="flex flex-col space-y-2">
+        <label class="flex items-center justify-between cursor-pointer select-none">
+          <span class="text-lg font-medium text-gray-200">Edit Mode</span>
+          <input type="checkbox" id="edit-mode-toggle" class="toggle-checkbox">
+        </label>
+        <div class="text-sm text-gray-400">
+          Click on the map to add new dots. Drag existing dots to move them.
+        </div>
+      </div>
+      <form id="edit-form" class="bg-gray-700 p-4 rounded-lg space-y-4">
+        <h3 class="text-lg font-bold flex items-center space-x-2 text-red-400">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-400"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          <span>Edit Selected Location</span>
+        </h3>
+        <div>
+          <label class="block text-sm font-medium text-gray-300">Title</label>
+          <input type="text" name="title" class="mt-1 block w-full rounded-md border-gray-600 bg-gray-900 text-white shadow-sm focus:border-red-500 focus:ring-red-500 p-2">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-300">Description</label>
+          <textarea name="description" rows="3" class="mt-1 block w-full rounded-md border-gray-600 bg-gray-900 text-white shadow-sm focus:border-red-500 focus:ring-red-500 p-2"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-300">Image URL</label>
+          <input type="text" name="imageUrl" class="mt-1 block w-full rounded-md border-gray-600 bg-gray-900 text-white shadow-sm focus:border-red-500 focus:ring-red-500 p-2">
+        </div>
+        <div class="flex justify-end space-x-2 mt-4">
+          <button type="button" id="delete-dot" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+            Delete Dot
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Pop-up for Content -->
+  <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+    <div id="modal-content" class="bg-gray-800 rounded-xl shadow-xl overflow-hidden w-full max-w-md scale-up-center">
+    </div>
+    <button id="close-modal" class="hidden"></button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
